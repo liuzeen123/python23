@@ -1,0 +1,72 @@
+import pymysql
+
+class Solution(object):
+
+    def __init__(self):
+
+        self.conn = pymysql.connect(host='localhost', port=3306, user='root',
+                                    password='mysql', database='heima', charset='utf8')
+        self.cursor = self.conn.cursor()
+
+    @staticmethod
+    def show_info():
+        print('1.添加商品')
+        print('2.查询商品')
+
+
+    def add_info(self):
+        #先判断需要添加的商品信息是否存在
+        get_goods_name = input('请添加需要添加的商品的信息:')
+        get_goods_price = float(input('请输入价格:'))
+        sql = 'select * from goods where name=%s;'
+        self.cursor.execute(sql,(get_goods_name,))
+        if self.cursor.fetchone():
+            print('商品已存在,请重新添加')
+            return
+
+        sql = 'insert into goods(name,price) values(%s,%s);'
+        self.cursor.execute(sql, (get_goods_name, get_goods_price))
+        self.conn.commit()
+
+        print('添加成功!')
+
+    def search_info(self):
+        search_name = input('请输入查询信息的产品名:')
+        sql = 'select * from goods where name=%s'
+        self.cursor.execute(sql, (search_name, ))
+        if not self.cursor.fetchone():
+            print('商品不存在!')
+            return
+        self.cursor.execute(sql, (search_name, ))
+        data = self.cursor.fetchone()
+
+        html = "商品编号:%d,商品名称:%s,商品价格:%f" % (data[0],data[1],data[2])
+
+        print(html)
+
+    def __del__(self):
+        self.cursor.close()
+        self.conn.close()
+
+    def start(self):
+        while True:
+            self.show_info()
+            get_num = int(input('输入要执行的操作:'))
+
+            if get_num == 1:
+                print('1.添加商品')
+                self.add_info()
+
+            elif get_num == 2:
+                print('2.查询商品')
+                self.search_info()
+
+            else:
+                print('请重新输入')
+
+            input('按回车键继续')
+
+if __name__ == '__main__':
+
+    c = Solution()
+    c.start()
